@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  name         String?
+  workspaces   Workspace[]
+  createdAt    DateTime    @default(now())
+}
+
+model Workspace {
+  id          String     @id @default(uuid())
+  name        String
+  ownerUserId String
+  owner       User       @relation(fields: [ownerUserId], references: [id])
+  habits      Habit[]
+  notes       DailyNote[]
+  createdAt   DateTime   @default(now())
+}
+
+model Habit {
+  id          String     @id @default(uuid())
+  workspaceId String
+  name        String
+  active      Boolean    @default(true)
+  icon        String     @default("🎯")
+  color       String     @default("#5b6cff")
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  logs        HabitLog[]
+  createdAt   DateTime   @default(now())
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  date      DateTime
+  status    String
+  habit     Habit    @relation(fields: [habitId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model DailyNote {
+  id          String    @id @default(uuid())
+  workspaceId String
+  date        DateTime
+  text        String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+}
